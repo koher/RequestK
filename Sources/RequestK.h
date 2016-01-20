@@ -1,12 +1,4 @@
-//
-//  RequestK.h
-//  RequestK
-//
-//  Created by Yuta Koshizawa on 1/14/16.
-//  Copyright © 2016 koherent.org. All rights reserved.
-//
-
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 //! Project version number for RequestK.
 FOUNDATION_EXPORT double RequestKVersionNumber;
