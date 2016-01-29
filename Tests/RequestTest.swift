@@ -38,6 +38,8 @@ class RequestTest: XCTestCase {
             case let .Success(response):
                 XCTAssertEqual(response.statusCode, 200)
                 print(NSString(data: response.data!, encoding: NSUTF8StringEncoding))
+                let users = try! NSJSONSerialization.JSONObjectWithData(response.data!, options: NSJSONReadingOptions.AllowFragments) as! NSArray
+                XCTAssertEqual(users.count, 3)
             case let .Failure(error):
                 XCTFail("\(error)")
             }

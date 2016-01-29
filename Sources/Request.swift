@@ -31,7 +31,7 @@ public class Request {
     
     public func send() -> Promise<Result<Response>> {
         return Promise { resolve in
-            let query = self.parameters.map { (percentEncode($0), percentEncode($1)) }.map { "\($0)=\($1)" }.joinWithSeparator("&").dataUsingEncoding(NSUTF8StringEncoding)
+            let query = self.parameters.map { (percentEncode($0), percentEncode($1)) }.map { "\($0)=\($1)" }.joinWithSeparator("&")
             let request: NSURLRequest
             switch self.method {
             case .GET, .HEAD, .DELETE:
@@ -41,7 +41,7 @@ public class Request {
             default:
                 let mutableRequest = NSMutableURLRequest(URL: self.url)
                 mutableRequest.HTTPMethod = self.method.rawValue
-                mutableRequest.HTTPBody = query
+                mutableRequest.HTTPBody = query.dataUsingEncoding(NSUTF8StringEncoding)
                 request = mutableRequest
             }
             
