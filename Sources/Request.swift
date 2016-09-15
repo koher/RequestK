@@ -9,13 +9,13 @@ import Darwin
 import PromiseK
 import ResultK
 
-public class Request {
-    public let method: Method
-    public let url: NSURL
-    public let parameters: [String: String]
-    public let headers: [String: String]
+open class Request {
+    open let method: Method
+    open let url: URL
+    open let parameters: [String: String]
+    open let headers: [String: String]
     
-    public init(method: Method, url: NSURL, parameters: [String: String] = [:], headers: [String: String] = [:]) {
+    public init(method: Method, url: URL, parameters: [String: String] = [:], headers: [String: String] = [:]) {
         self.method = method
         self.url = url
         self.parameters = parameters
@@ -23,15 +23,15 @@ public class Request {
     }
     
     public convenience init?(method: Method, url: String, parameters: [String: String] = [:], headers: [String: String] = [:]) {
-        guard let url = NSURL(string: url) else {
+        guard let url = URL(string: url) else {
             return nil
         }
         self.init(method: method, url: url, parameters: parameters, headers: headers)
     }
     
-    public func send() -> Promise<Result<Response>> {
+    open func send() -> Promise<Result<Response>> {
         return Promise { resolve in
-            let query = self.parameters.map { (percentEncode($0), percentEncode($1)) }.map { "\($0)=\($1)" }.joinWithSeparator("&")
+            let query = self.parameters.map { (percentEncode($0), percentEncode($1)) }.map { "\($0)=\($1)" }.joined(separator: "&")
             let request: NSURLRequest
             switch self.method {
             case .GET, .HEAD, .DELETE:
@@ -39,28 +39,28 @@ public class Request {
                 mutableRequest.HTTPMethod = self.method.rawValue
                 request = mutableRequest
             default:
-                let mutableRequest = NSMutableURLRequest(URL: self.url)
-                mutableRequest.HTTPMethod = self.method.rawValue
-                mutableRequest.HTTPBody = query.dataUsingEncoding(NSUTF8StringEncoding)
+                let mutableRequest = NSMutableURLRequest(url: self.url)
+                mutableRequest.httpMethod = self.method.rawValue
+                mutableRequest.httpBody = query.data(using: String.Encoding.utf8)
                 request = mutableRequest
             }
             
-            let configuration = NSURLSessionConfiguration.ephemeralSessionConfiguration()
-            configuration.HTTPAdditionalHeaders = self.headers
-            let session = NSURLSession(configuration: configuration, delegate: nil, delegateQueue: NSOperationQueue.mainQueue())
+            let configuration = URLSessionConfiguration.ephemeral
+            configuration.httpAdditionalHeaders = self.headers
+            let session = URLSession(configuration: configuration, delegate: nil, delegateQueue: OperationQueue.main)
             
-            let task = session.dataTaskWithRequest(request) { data, response, error in
+            let task = session.dataTask(with: request as URLRequest) { data, response, error in
                 if let error = error {
                     resolve(pure(Result(error: error)))
                     return
                 }
                 
                 switch response {
-                case let response as NSHTTPURLResponse:
+                case let response as HTTPURLResponse:
                     let headerFields = response.allHeaderFields.flatMap { (name, value) in
                         (name as? String).flatMap { name in (value as? String).flatMap { value in (name, value) } }
                     }
-                    let headers: [String: String] = headerFields.reduce([:]) { (var headers, field) in headers[field.0] = field.1; return headers }
+                    let headers: [String: String] = headerFields.reduce([:]) { (headers, field) in headers[field.0] = field.1; return headers }
                     resolve(pure(pure(Response(statusCode: response.statusCode, headers: headers, data: data))))
                 default:
                     fatalError("Only HTTP and HTTPS are supported now: \(self.url.absoluteString)")
@@ -71,6 +71,6 @@ public class Request {
     }
 }
 
-private func percentEncode(string: String) -> String {
-    return string.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet()) ?? string
+private func percentEncode(_ string: String) -> String {
+    return string.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed) ?? string
 }

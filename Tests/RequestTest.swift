@@ -3,7 +3,7 @@ import XCTest
 
 class RequestTest: XCTestCase {
     func testBasic() {
-        let expectation = expectationWithDescription("")
+        let expectation = self.expectation(description: "")
 
         let request = Request(method: .GET, url: "https://avatars2.githubusercontent.com/u/217100")!
         let response = request.send()
@@ -19,7 +19,7 @@ class RequestTest: XCTestCase {
             expectation.fulfill()
         }
         
-        waitForExpectationsWithTimeout(5.0, handler: nil)
+        waitForExpectations(timeout: 5.0, handler: nil)
     }
     
     func testPost() {
@@ -27,7 +27,7 @@ class RequestTest: XCTestCase {
     }
     
     func testParameters() {
-        let expectation = expectationWithDescription("")
+        let expectation = self.expectation(description: "")
         
         let request = Request(method: .GET, url: "https://qiita.com/api/v2/users", parameters: [
             "per_page": "3"
@@ -46,17 +46,17 @@ class RequestTest: XCTestCase {
             expectation.fulfill()
         }
         
-        waitForExpectationsWithTimeout(5.0, handler: nil)
+        waitForExpectations(timeout: 5.0, handler: nil)
     }
     
     func testHeaders() {
-        let expectation = expectationWithDescription("")
+        let expectation = self.expectation(description: "")
 
-        guard let accessTokenPath = NSBundle(forClass: self.dynamicType).pathForResource("QiitaAccessToken", ofType: nil) else {
+        guard let accessTokenPath = Bundle(for: type(of: self)).path(forResource: "QiitaAccessToken", ofType: nil) else {
             XCTFail("Put a file named \"QiitaAccessToken\" in which an access token of Qiita with the read_qiita scope is written: https://qiita.com/settings/applications")
             return
         }
-        let accessToken = try! NSString(contentsOfFile: accessTokenPath, encoding: NSUTF8StringEncoding)
+        let accessToken = try! NSString(contentsOfFile: accessTokenPath, encoding: String.Encoding.utf8.rawValue)
         let request = Request(method: .GET, url: "https://qiita.com/api/v2/authenticated_user", headers: [
             "Authorization" : "Bearer \(accessToken)"
         ])!
@@ -73,6 +73,6 @@ class RequestTest: XCTestCase {
             expectation.fulfill()
         }
         
-        waitForExpectationsWithTimeout(5.0, handler: nil)
+        waitForExpectations(timeout: 5.0, handler: nil)
     }
 }
