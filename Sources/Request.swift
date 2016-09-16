@@ -35,8 +35,8 @@ open class Request {
             let request: NSURLRequest
             switch self.method {
             case .GET, .HEAD, .DELETE:
-                let mutableRequest = NSMutableURLRequest(URL: NSURL(string: self.url.absoluteString.stringByAppendingString("?\(query)")) ?? self.url)
-                mutableRequest.HTTPMethod = self.method.rawValue
+                let mutableRequest = NSMutableURLRequest(url: URL(string: self.url.absoluteString.appendingFormat("?\(query)")) ?? self.url)
+                mutableRequest.httpMethod = self.method.rawValue
                 request = mutableRequest
             default:
                 let mutableRequest = NSMutableURLRequest(url: self.url)
@@ -60,7 +60,11 @@ open class Request {
                     let headerFields = response.allHeaderFields.flatMap { (name, value) in
                         (name as? String).flatMap { name in (value as? String).flatMap { value in (name, value) } }
                     }
-                    let headers: [String: String] = headerFields.reduce([:]) { (headers, field) in headers[field.0] = field.1; return headers }
+                    let headers: [String: String] = headerFields.reduce([:]) { (headers, field) in
+                        var headers2 = headers
+                        headers2[field.0] = field.1
+                        return headers2
+                    }
                     resolve(pure(pure(Response(statusCode: response.statusCode, headers: headers, data: data))))
                 default:
                     fatalError("Only HTTP and HTTPS are supported now: \(self.url.absoluteString)")

@@ -1,4 +1,5 @@
 import XCTest
+import Foundation
 @testable import RequestK
 
 class RequestTest: XCTestCase {
@@ -7,13 +8,13 @@ class RequestTest: XCTestCase {
 
         let request = Request(method: .GET, url: "https://avatars2.githubusercontent.com/u/217100")!
         let response = request.send()
-        response.map { result in
+        _ = response.map { result in
             switch result {
-            case let .Success(response):
+            case let .success(response):
                 XCTAssertEqual(response.statusCode, 200)
                 print(response.headers)
-                XCTAssertEqual(response.data!, NSData(contentsOfURL: NSURL(string:"https://avatars2.githubusercontent.com/u/217100")!)!)
-            case let .Failure(error):
+                XCTAssertEqual(response.data!, try! Data(contentsOf: URL(string:"https://avatars2.githubusercontent.com/u/217100")!))
+            case let .failure(error):
                 XCTFail("\(error)")
             }
             expectation.fulfill()
@@ -33,14 +34,14 @@ class RequestTest: XCTestCase {
             "per_page": "3"
         ])!
         let response = request.send()
-        response.map { result in
+        _ = response.map { result in
             switch result {
-            case let .Success(response):
+            case let .success(response):
                 XCTAssertEqual(response.statusCode, 200)
-                print(NSString(data: response.data!, encoding: NSUTF8StringEncoding))
-                let users = try! NSJSONSerialization.JSONObjectWithData(response.data!, options: NSJSONReadingOptions.AllowFragments) as! NSArray
+                print(String(data: response.data!, encoding: String.Encoding.utf8))
+                let users = try! JSONSerialization.jsonObject(with: response.data!, options: JSONSerialization.ReadingOptions.allowFragments) as! NSArray
                 XCTAssertEqual(users.count, 3)
-            case let .Failure(error):
+            case let .failure(error):
                 XCTFail("\(error)")
             }
             expectation.fulfill()
@@ -61,13 +62,13 @@ class RequestTest: XCTestCase {
             "Authorization" : "Bearer \(accessToken)"
         ])!
         let response = request.send()
-        response.map { result in
+        _ = response.map { result in
             switch result {
-            case let .Success(response):
+            case let .success(response):
                 print("=== Qiita")
                 XCTAssertEqual(response.statusCode, 200)
                 print(response.headers)
-            case let .Failure(error):
+            case let .failure(error):
                 XCTFail("\(error)")
             }
             expectation.fulfill()
