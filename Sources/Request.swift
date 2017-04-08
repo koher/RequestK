@@ -65,7 +65,7 @@ open class Request {
                         headers2[field.0] = field.1
                         return headers2
                     }
-                    resolve(pure(pure(Response(statusCode: response.statusCode, headers: headers, data: data))))
+                    resolve(Promise(Result(Response(statusCode: response.statusCode, headers: headers, data: data))))
                 default:
                     fatalError("Only HTTP and HTTPS are supported now: \(self.url.absoluteString)")
                 }
