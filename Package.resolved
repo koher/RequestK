@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "PromiseK",
+        "repositoryURL": "https://github.com/koher/PromiseK.git",
+        "state": {
+          "branch": null,
+          "revision": "5fef149c4de1b8f96890657529f8cce3441b48b8",
+          "version": "3.1.1"
+        }
+      },
+      {
+        "package": "ResultK",
+        "repositoryURL": "https://github.com/koher/ResultK.git",
+        "state": {
+          "branch": null,
+          "revision": "2e26c3200ebf1ece0524cc3a0dfa9b52f1633865",
+          "version": "0.2.0-alpha.2"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,11 +1,18 @@
-// swift-tools-version:3.1
+// swift-tools-version:4.2
 
 import PackageDescription
 
 let package = Package(
     name: "RequestK",
+    products: [
+        .library(name: "RequestK", targets: ["RequestK"]),
+    ],
     dependencies: [
-        .Package(url: "https://github.com/koher/PromiseK.git", majorVersion: 2),
-        .Package(url: "https://github.com/koher/ResultK.git", majorVersion: 0),
+        .package(url: "https://github.com/koher/PromiseK.git", from: "3.0.0"),
+        .package(url: "https://github.com/koher/ResultK.git", from: "0.2.0-alpha"),
+    ],
+    targets: [
+        .target(name: "RequestK", dependencies: ["PromiseK", "ResultK"]),
+        .testTarget(name: "RequestKTests", dependencies: ["PromiseK", "ResultK", "RequestK"]),
     ]
 )

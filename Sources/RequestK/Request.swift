@@ -1,19 +1,13 @@
 import Foundation
 
-#if os(Linux)
-import Glibc
-#else
-import Darwin
-#endif
-
 import PromiseK
 import ResultK
 
-open class Request {
-    open let method: Method
-    open let url: URL
-    open let parameters: [String: String]
-    open let headers: [String: String]
+public class Request {
+    public let method: Method
+    public let url: URL
+    public let parameters: [String: String]
+    public let headers: [String: String]
     
     public init(method: Method, url: URL, parameters: [String: String] = [:], headers: [String: String] = [:]) {
         self.method = method
@@ -32,14 +26,14 @@ open class Request {
     open func send() -> Promise<Result<Response>> {
         return Promise { resolve in
             let query = self.parameters.map { (percentEncode($0), percentEncode($1)) }.map { "\($0)=\($1)" }.joined(separator: "&")
-            let request: NSURLRequest
+            let request: URLRequest
             switch self.method {
-            case .GET, .HEAD, .DELETE:
-                let mutableRequest = NSMutableURLRequest(url: URL(string: self.url.absoluteString.appendingFormat("?\(query)")) ?? self.url)
+            case .get, .head, .delete:
+                var mutableRequest = URLRequest(url: URL(string: self.url.absoluteString.appendingFormat("?\(query)")) ?? self.url)
                 mutableRequest.httpMethod = self.method.rawValue
                 request = mutableRequest
             default:
-                let mutableRequest = NSMutableURLRequest(url: self.url)
+                var mutableRequest = URLRequest(url: self.url)
                 mutableRequest.httpMethod = self.method.rawValue
                 mutableRequest.httpBody = query.data(using: String.Encoding.utf8)
                 request = mutableRequest
@@ -51,13 +45,13 @@ open class Request {
             
             let task = session.dataTask(with: request as URLRequest) { data, response, error in
                 if let error = error {
-                    resolve(pure(Result(error: error)))
+                    resolve(Result<Response>(error: error))
                     return
                 }
                 
                 switch response {
                 case let response as HTTPURLResponse:
-                    let headerFields = response.allHeaderFields.flatMap { (name, value) in
+                    let headerFields = response.allHeaderFields.compactMap { (name, value) in
                         (name as? String).flatMap { name in (value as? String).flatMap { value in (name, value) } }
                     }
                     let headers: [String: String] = headerFields.reduce([:]) { (headers, field) in
@@ -65,7 +59,7 @@ open class Request {
                         headers2[field.0] = field.1
                         return headers2
                     }
-                    resolve(Promise(Result(Response(statusCode: response.statusCode, headers: headers, data: data))))
+                    resolve(Result(Response(statusCode: response.statusCode, headers: headers, data: data)))
                 default:
                     fatalError("Only HTTP and HTTPS are supported now: \(self.url.absoluteString)")
                 }
